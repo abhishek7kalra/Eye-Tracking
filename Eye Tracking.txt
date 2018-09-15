@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Jun 04 18:53:14 2018
+
+@author: Abhishek
+"""
+import numpy as np
+import cv2
+import time
+
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier('haarcascade_righteye_2splits.xml')
+cap = cv2.VideoCapture(0)
+while 1:
+    _, img = cap.read()
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 2, 5)
+    eyes = eye_cascade.detectMultiScale(gray, 2)
+    for (ex,ey,ew,eh) in eyes:
+        cv2.rectangle(img,(ex,ey),(ex+ew,ey+eh),(0,255,0),2)
+        roi_gray2 = gray[ey:ey+eh, ex:ex+ew]
+        roi_color2 = img[ey:ey+eh, ex:ex+ew]
+        roi_color3 = img[ey:2*(ey+eh), ex:2*(ex+ew)]
+        a = list()
+        time.sleep(0.05)
+        #circles = cv2.HoughCircles(roi_gray2,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
+        circles = cv2.HoughCircles(roi_gray2,cv2.HOUGH_GRADIENT,1,200,param1=200,param2=1,minRadius=2,maxRadius=10)
+        try:
+            for i in circles[0,:]:
+                if i[0] is not None and i[1] is not None:
+                    # draw the outer circle
+                    cv2.circle(roi_color2,(i[0],i[1]),i[2],(255,255,255),2)
+                    # draw the center of the circle
+                    cv2.circle(roi_color2,(i[0],i[1]),2,(255,255,255),3)
+                    print i[0],i[1]
+                    a.append((i[0],i[1]))
+        except Exception as e:
+            print e
+    cv2.imshow('img',img)
+    #cv2.imshow('i2', roi_gray2)
+    #cv2.imshow('i3', roi_color3)
+    k = cv2.waitKey(30) & 0xff
+    if k == 27:
+        break
+cap.release()
+cv2.destroyAllWindows()
+
+    
